@@ -56,7 +56,7 @@ class UserController extends AbstractController
     /**
      * @Route("/users/{id}/edit", name="user_edit")
      */
-    public function editAction(User $user, UserRepository $userRepository, Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $userPasswordHasher): RedirectResponse|Response
+    public function editAction(User $user, UserRepository $userRepository, Request $request, UserPasswordHasherInterface $userPasswordHasher): RedirectResponse|Response
     {
         $form = $this->createForm(UserType::class, $user);
 
