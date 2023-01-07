@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Task;
+use App\Entity\User;
 use App\Form\TaskType;
 use App\Repository\TaskRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -11,16 +12,26 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class TaskController extends AbstractController
 {
     #[Route(path: '/tasks', name: 'task_list')]
+    #[IsGranted('ROLE_USER', message: "Vous devez être connecter avec un compte utilisateur")]
     public function listAction(TaskRepository $taskRepository): Response
     {
-        return $this->render('task/list.html.twig', ['tasks' => $taskRepository->findAll()]);
+        /** @var User $user */
+        $user = $this->getUser();
+        $userId = $user->getId();
+        if (null === $userId) {
+            $this->addFlash('error', 'Vous ne possédez pas de droit suffisant pour éditer cette tâche');
+            return $this->redirectToRoute('task_list');
+        }
+        return $this->render('task/list.html.twig', ['tasks' => $taskRepository->findBy([ "user" => $user, "user" => null ])]);
     }
 
     #[Route(path: '/tasks/create', name: 'task_create')]
+    #[IsGranted('ROLE_USER', message: "Vous devez être connecter avec un compte utilisateur")]
     public function createAction(Request $request, EntityManagerInterface $em): RedirectResponse|Response
     {
         $task = new Task();
@@ -29,7 +40,9 @@ class TaskController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
+            /** @var User $user */
+            $user = $this->getUser();
+            $task->setUser($user);
             $em->persist($task);
             $em->flush();
 
@@ -42,8 +55,13 @@ class TaskController extends AbstractController
     }
 
     #[Route(path: '/tasks/{id}/edit', name: 'task_edit')]
+    #[IsGranted('ROLE_USER', message: "Vous devez être connecter avec un compte utilisateur")]
     public function editAction(Task $task, TaskRepository $taskRepository, Request $request): RedirectResponse|Response
     {
+        if($task->getUser() !== $this->getUser()){
+            $this->addFlash('error', 'Vous ne possédez pas de droit suffisant pour editer cette tâche');
+            return $this->redirectToRoute('task_list');
+        }
         $form = $this->createForm(TaskType::class, $task);
 
         $form->handleRequest($request);
@@ -63,8 +81,13 @@ class TaskController extends AbstractController
     }
 
     #[Route(path: '/tasks/{id}/toggle', name: 'task_toggle')]
+    #[IsGranted('ROLE_USER', message: "Vous devez être connecter avec un compte utilisateur")]
     public function toggleTaskAction(Task $task, TaskRepository $taskRepository): RedirectResponse
     {
+        if($task->getUser() !== $this->getUser()){
+            $this->addFlash('error', 'Vous ne possédez pas de droit suffisant pour editer cette tâche');
+            return $this->redirectToRoute('task_list');
+        }
         $task->toggle(!$task->isDone());
         $taskRepository->add($task, true);
 
@@ -74,8 +97,13 @@ class TaskController extends AbstractController
     }
 
     #[Route(path: '/tasks/{id}/delete', name: 'task_delete')]
+    #[IsGranted('ROLE_USER', message: "Vous devez être connecter avec un compte utilisateur")]
     public function deleteTaskAction(Task $task, EntityManagerInterface $em): RedirectResponse
     {
+        if($task->getUser() !== $this->getUser()){
+            $this->addFlash('error', 'Vous ne possédez pas de droit suffisant pour editer cette tâche');
+            return $this->redirectToRoute('task_list');
+        }
         $em->remove($task);
         $em->flush();
 
