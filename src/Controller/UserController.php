@@ -15,17 +15,13 @@ use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends AbstractController
 {
-    /**
-     * @Route("/users", name="user_list", methods="GET")
-     */
+    #[Route(path: '/users', name: 'user_list', methods: 'GET')]
     public function listAction(UserRepository $userRepository): Response
     {
         return $this->render('user/list.html.twig', ['users' => $userRepository->findAll()]);
     }
 
-    /**
-     * @Route("/users/create", name="user_create")
-     */
+    #[Route(path: '/users/create', name: 'user_create')]
     public function createAction(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $userPasswordHasher): RedirectResponse|Response
     {
         $user = new User();
@@ -50,9 +46,7 @@ class UserController extends AbstractController
         return $this->render('user/create.html.twig', ['form' => $form->createView()]);
     }
 
-    /**
-     * @Route("/users/{id}/edit", name="user_edit")
-     */
+    #[Route(path: '/users/{id}/edit', name: 'user_edit')]
     public function editAction(User $user, UserRepository $userRepository, Request $request, UserPasswordHasherInterface $userPasswordHasher): RedirectResponse|Response
     {
         $form = $this->createForm(UserType::class, $user);

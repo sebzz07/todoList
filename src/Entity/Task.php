@@ -2,51 +2,43 @@
 
 namespace App\Entity;
 
+use App\Repository\TaskRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity
- * @ORM\Table
- */
+#[ORM\Entity(repositoryClass: TaskRepository::class)]
+#[ORM\Table]
+
 class Task
 {
-    /**
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private ?int $id;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     private \Datetime $createdAt;
 
-    /**
-     * @ORM\Column(type="string")
-     * @Assert\NotBlank(message="Vous devez saisir un titre.")
-     */
-    private ?string $title;
+    #[ORM\Column(type: 'string')]
+    #[Assert\NotBlank(message: 'Vous devez saisir un titre.')]
+    private ?string $title = null;
 
-    /**
-     * @ORM\Column(type="text")
-     * @Assert\NotBlank(message="Vous devez saisir du contenu.")
-     */
-    private ?string $content;
+    #[ORM\Column(type: 'text')]
+    #[Assert\NotBlank(message: 'Vous devez saisir du contenu.')]
+    private ?string $content = null;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private bool $isDone;
+    #[ORM\Column(type: 'boolean')]
+    private bool $isDone = false;
+
+    #[ORM\ManyToOne(inversedBy: 'tasks')]
+    private ?User $user = null;
 
     public function __construct()
     {
         $this->createdAt = new \Datetime();
-        $this->isDone = false;
     }
 
-    public function getId() : int
+    public function getId() : ?int
     {
         return $this->id;
     }
@@ -89,5 +81,17 @@ class Task
     public function toggle($flag): void
     {
         $this->isDone = $flag;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
+
+        return $this;
     }
 }

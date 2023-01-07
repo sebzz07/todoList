@@ -131,6 +131,10 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/web-link" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/service-contracts" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/security-bundle" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/phpstan/phpstan" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/rector/rector" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/phpstan/phpstan-doctrine" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/phpstan/phpstan-symfony" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
