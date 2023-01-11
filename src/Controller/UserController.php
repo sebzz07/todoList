@@ -12,16 +12,19 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class UserController extends AbstractController
 {
     #[Route(path: '/users', name: 'user_list', methods: 'GET')]
+    #[IsGranted('ROLE_ADMIN', message: "Vous devez être Administrateur pour accéder à cette page")]
     public function listAction(UserRepository $userRepository): Response
     {
         return $this->render('user/list.html.twig', ['users' => $userRepository->findAll()]);
     }
 
     #[Route(path: '/users/create', name: 'user_create')]
+    #[IsGranted('ROLE_ADMIN', message: "Vous devez être Administrateur pour accéder à cette page")]
     public function createAction(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $userPasswordHasher): RedirectResponse|Response
     {
         $user = new User();
@@ -47,6 +50,7 @@ class UserController extends AbstractController
     }
 
     #[Route(path: '/users/{id}/edit', name: 'user_edit')]
+    #[IsGranted('ROLE_ADMIN', message: "Vous devez être Administrateur pour accéder à cette page")]
     public function editAction(User $user, UserRepository $userRepository, Request $request, UserPasswordHasherInterface $userPasswordHasher): RedirectResponse|Response
     {
         $form = $this->createForm(UserType::class, $user);

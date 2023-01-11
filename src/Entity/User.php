@@ -15,7 +15,8 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 #[UniqueEntity('email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type
+        : 'integer')]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
     private readonly int $id;
@@ -27,12 +28,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 64)]
     private ?string $password = null;
 
+    /** @var array<int,string> */
+    #[ORM\Column(type: 'json')]
+    private array $roles = ['ROLE_USER'];
+
     #[ORM\Column(type: 'string', length: 60, unique: true)]
     #[Assert\NotBlank(message: 'Vous devez saisir une adresse email.')]
     #[Assert\Email(message: "Le format de l'adresse n'est pas correcte.")]
     private ?string $email = null;
 
-    #[ORM\OneToMany(mappedBy: 'User', targetEntity: Task::class)]
+    #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'user')]
     private Collection $tasks;
 
     public function __construct()
@@ -75,9 +80,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->email = $email;
     }
 
+    /**
+     * @see UserInterface
+     *
+     * @return array<int,string>
+     */
     public function getRoles(): array
     {
-        return ['ROLE_USER'];
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
+    }
+
+    /**
+     * @param array<int,string> $roles
+     *
+     * @return $this
+     */
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
+
+        return $this;
+    }
+
+    public function addRole(string $role) : self
+    {
+        $this->roles = array($role);
+        return $this;
     }
 
     public function eraseCredentials()
