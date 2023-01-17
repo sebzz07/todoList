@@ -4,16 +4,16 @@
 
 {% block body %}
     <div class="row">
-        <div class="col">
+        <div class="col text-center">
             <a href="{{ path('task_create') }}" class="btn btn-info pull-right">Créer une tâche</a>
         </div>
         {% if app.request.attributes.get('_route_params')['isDone'] is not same as("1") %}
-            <div class="col  text-center">
+            <div class="col text-center">
                 <a href="{{ path('task_list', { 'isDone': 1 }) }}" class="btn btn-info">Consulter la liste des
                     tâches terminées</a>
             </div>
         {% else %}
-            <div class="col  text-center">
+            <div class="col text-center">
                 <a href="{{ path('task_list') }}" class="btn btn-info">Consulter la liste des tâches à faire</a>
             </div>
         {% endif %}

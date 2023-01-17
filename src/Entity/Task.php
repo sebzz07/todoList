@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Entity;
 
@@ -48,9 +48,10 @@ class Task
         return $this->createdAt;
     }
 
-    public function setCreatedAt($createdAt): void
+    public function setCreatedAt($createdAt): self
     {
         $this->createdAt = $createdAt;
+        return $this;
     }
 
     public function getTitle(): ?string
@@ -58,9 +59,10 @@ class Task
         return $this->title;
     }
 
-    public function setTitle($title): void
+    public function setTitle($title): self
     {
         $this->title = $title;
+        return $this;
     }
 
     public function getContent(): ?string
@@ -68,9 +70,10 @@ class Task
         return $this->content;
     }
 
-    public function setContent($content): void
+    public function setContent($content): self
     {
         $this->content = $content;
+        return $this;
     }
 
     public function isDone(): bool
@@ -78,9 +81,10 @@ class Task
         return $this->isDone;
     }
 
-    public function toggle($flag): void
+    public function toggle(bool $flag): self
     {
         $this->isDone = $flag;
+        return $this;
     }
 
     public function getUser(): ?User
@@ -91,7 +95,6 @@ class Task
     public function setUser(?User $user): self
     {
         $this->user = $user;
-
         return $this;
     }
 }
