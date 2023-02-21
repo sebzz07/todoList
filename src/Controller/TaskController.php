@@ -85,11 +85,15 @@ class TaskController extends AbstractController
     #[IsGranted('ROLE_USER', message: "Vous devez être connecter avec un compte utilisateur")]
     public function toggleTaskAction(Task $task, TaskRepository $taskRepository): RedirectResponse
     {
-        if($this->getUser()->getRoles() == "ROLE_USER" and $task->getUser() !== $this->getUser()){
+        /** @var User $user */
+        $user = $this->getUser();
+        $userRoles = implode($user->getRoles());
+        $userRoles = implode($this->getUser()->getRoles());
+        if($userRoles == "ROLE_USER" and $task->getUser() !== $this->getUser()){
             $this->addFlash('error', 'Vous ne possédez pas de droit suffisant pour changer cette tâche');
             return $this->redirectToRoute('task_list');
         }
-        if($this->getUser()->getRoles() == "ROLE_ADMIN" and $task->getUser() !== ($this->getUser()||null)){
+        if($userRoles == "ROLE_ADMIN" and $task->getUser() !== ($this->getUser()||null)){
             $this->addFlash('error', "Vous ne pouvez pas changer la tâche d'un autre utilisateur");
             return $this->redirectToRoute('task_list');
         }
@@ -105,11 +109,14 @@ class TaskController extends AbstractController
     #[IsGranted('ROLE_USER', message: "Vous devez être connecter avec un compte utilisateur")]
     public function deleteTaskAction(Task $task, EntityManagerInterface $em): RedirectResponse
     {
-        if($this->getUser()->getRoles() == "ROLE_USER" and $task->getUser() !== $this->getUser()){
+        /** @var User $user */
+        $user = $this->getUser();
+        $userRoles = implode($user->getRoles());
+        if($userRoles == "ROLE_USER" and $task->getUser() !== ($user||null)){
             $this->addFlash('error', 'Vous ne pouvez supprimer que vos propres tâches ');
             return $this->redirectToRoute('task_list');
         }
-        if($this->getUser()->getRoles() == "ROLE_ADMIN" and $task->getUser() !== ($this->getUser()||null)){
+        if($userRoles == "ROLE_ADMIN" and $task->getUser() !== $user){
             $this->addFlash('error', "Vous ne pouvez pas supprimer la tâche d'un autre utilisateur");
             return $this->redirectToRoute('task_list');
         }

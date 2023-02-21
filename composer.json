@@ -68,6 +68,17 @@
         "symfony/polyfill-php81": "*"
     },
     "scripts": {
+        "initialize": [
+            "symfony console doctrine:database:create",
+            "symfony console doctrine:schema:update --force",
+            "symfony console doctrine:fixtures:load -n"
+        ],
+        "reloadSqlDb": [
+            "symfony console doctrine:database:drop --if-exists --force",
+            "symfony console doctrine:database:create",
+            "symfony console doctrine:schema:update --force",
+            "symfony console doctrine:fixtures:load -n"
+        ],
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd"
@@ -103,7 +114,6 @@
         "symfony/maker-bundle": "^1.48",
         "symfony/phpunit-bridge": "^6.2",
         "symfony/stopwatch": "6.2.*",
-        "symfony/web-profiler-bundle": "6.2.*",
-        "ext-http": "*"
+        "symfony/web-profiler-bundle": "6.2.*"
     }
 }

@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class LoginControllerTest extends WebTestCase
 {
-    public function testDisplayLoginPage()
+    public function testDisplayLoginPage(): void
     {
         $client = static::createClient();
         $client->request('GET', '/login');
@@ -15,7 +15,7 @@ class LoginControllerTest extends WebTestCase
         $this->assertSelectorNotExists('alert alert-danger');
 
     }
-    public function testLoginWithBadCredentials()
+    public function testLoginWithBadCredentials(): void
     {
         $client = static::createClient();
         $client->followRedirects();
