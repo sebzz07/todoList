@@ -4,15 +4,12 @@ namespace App\Tests\Controller;
 
 use App\Repository\UserRepository;
 use Exception;
-use http\Exception\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\Security\Http\Firewall\ExceptionListener;
-
 class UserControllerTest extends WebTestCase
 {
-    public function testCreateUserPageIsRestricted()
+
+    public function testCreateUserPageIsRestricted() : void
     {
         $client = static::createClient();
         $client->followRedirects();
@@ -24,9 +21,8 @@ class UserControllerTest extends WebTestCase
      *
      * @throws Exception
      */
-    public function testCreateUserPageUnauthorizedForUser()
+    public function testCreateUserPageUnauthorizedForUser() : void
     {
-
         $client = static::createClient();
         $userRepository = static::getContainer()->get(UserRepository::class);
 
@@ -42,7 +38,7 @@ class UserControllerTest extends WebTestCase
     /**
      * @throws Exception
      */
-    public function testCreateUserPageAuthorizedForAdmin()
+    public function testCreateUserPageAuthorizedForAdmin() : void
     {
         $client = static::createClient();
         $userRepository = static::getContainer()->get(UserRepository::class);
@@ -57,7 +53,36 @@ class UserControllerTest extends WebTestCase
         $this->assertSelectorTextContains('h1', 'Créer un utilisateur');
     }
 
-    public function testUsersListPageIsRestrictedForNoLoggedUser()
+    /**
+     * @throws Exception
+     */
+    public function testCreateAUserPageByAdmin() : void
+    {
+        $client = static::createClient();
+        $client->followRedirects();
+        $userRepository = static::getContainer()->get(UserRepository::class);
+
+        // retrieve the test user
+        $testAdminUser = $userRepository->findOneBy(['username' => 'admin1']);
+
+        // simulate $testUser being logged in
+        $client->loginUser($testAdminUser);
+        $crawler = $client->request('GET', '/users/create');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('h1', 'Créer un utilisateur');
+        $form = $crawler->selectButton('Ajouter')->form();
+        $form['user[username]'] = 'NewUser';
+        $form['user[password][first]'] = 'NewUser';
+        $form['user[password][second]'] = 'NewUser';
+        $form['user[email]'] = 'NewUser@email.fr';
+        $form['user[role]']->select('ROLE_USER');
+        $client->submit($form);
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('html div.alert-success', "L'utilisateur a bien été ajouté.");
+
+    }
+
+    public function testUsersListPageIsRestrictedForNoLoggedUser() : void
     {
         $client = static::createClient();
         $client->followRedirects();
@@ -68,10 +93,11 @@ class UserControllerTest extends WebTestCase
     /**
      * @throws Exception
      */
-    public function testUsersListAuthorizedForAdmin()
+    public function testUsersListAuthorizedForAdmin() : void
     {
         $client = static::createClient();
         $userRepository = static::getContainer()->get(UserRepository::class);
+
 
         // retrieve the test user
         $testAdminUser = $userRepository->findOneBy(['username' => 'admin1']);
