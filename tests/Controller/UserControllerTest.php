@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Controller;
 
+use App\Entity\User;
 use App\Repository\UserRepository;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -20,7 +22,7 @@ class UserControllerTest extends WebTestCase
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function testCreateUserPageUnauthorizedForUser(): void
     {
@@ -29,6 +31,7 @@ class UserControllerTest extends WebTestCase
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test user
+        /** @var User $testUser */
         $testUser = $userRepository->findOneBy(['username' => 'user1']);
 
         // simulate $testUser being logged in
@@ -38,7 +41,7 @@ class UserControllerTest extends WebTestCase
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function testCreateUserPageAuthorizedForAdmin(): void
     {
@@ -46,6 +49,7 @@ class UserControllerTest extends WebTestCase
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test user
+        /** @var User $testAdminUser */
         $testAdminUser = $userRepository->findOneBy(['username' => 'admin1']);
 
         // simulate $testUser being logged in
@@ -56,7 +60,7 @@ class UserControllerTest extends WebTestCase
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function testCreateAUserByAdmin(): void
     {
@@ -65,6 +69,7 @@ class UserControllerTest extends WebTestCase
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test user
+        /** @var User $testAdminUser */
         $testAdminUser = $userRepository->findOneBy(['username' => 'admin1']);
 
         // simulate $testUser being logged in
@@ -92,7 +97,7 @@ class UserControllerTest extends WebTestCase
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function testUsersListAuthorizedForAdmin(): void
     {
@@ -100,6 +105,7 @@ class UserControllerTest extends WebTestCase
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test user
+        /** @var User $testAdminUser */
         $testAdminUser = $userRepository->findOneBy(['username' => 'admin1']);
 
         // simulate $testUser being logged in
@@ -110,7 +116,7 @@ class UserControllerTest extends WebTestCase
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function testEditAUserByAdmin(): void
     {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Controller;
 
+use App\Entity\User;
 use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -20,6 +21,7 @@ class TaskControllerTest extends WebTestCase
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test user
+        /** @var User $testAdminUser */
         $testAdminUser = $userRepository->findOneBy(['username' => 'admin1']);
 
         // simulate $testUser being logged in
@@ -161,6 +163,7 @@ class TaskControllerTest extends WebTestCase
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test user
+        /** @var User $testUser */
         $testUser = $userRepository->findOneBy(['username' => 'user1']);
         $task = $testUser->getTasks()->first();
 
