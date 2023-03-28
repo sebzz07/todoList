@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Controller;
 
@@ -7,18 +9,17 @@ use App\Entity\User;
 use App\Form\TaskType;
 use App\Repository\TaskRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class TaskController extends AbstractController
 {
-
     #[Route(path: '/tasks/create', name: 'task_create')]
-    #[IsGranted('ROLE_USER', message: "Vous devez être connecter avec un compte utilisateur")]
+    #[IsGranted('ROLE_USER', message: 'Vous devez être connecter avec un compte utilisateur')]
     public function createAction(Request $request, EntityManagerInterface $em): RedirectResponse|Response
     {
         $task = new Task();
@@ -42,7 +43,7 @@ class TaskController extends AbstractController
     }
 
     #[Route(path: '/tasks/{isDone}', name: 'task_list')]
-    #[IsGranted('ROLE_USER', message: "Vous devez être connecter avec un compte utilisateur")]
+    #[IsGranted('ROLE_USER', message: 'Vous devez être connecter avec un compte utilisateur')]
     public function listAction(TaskRepository $taskRepository, bool $isDone = false): Response
     {
         /** @var User $user */
@@ -50,17 +51,20 @@ class TaskController extends AbstractController
         $userId = $user->getId();
         if (null === $userId) {
             $this->addFlash('error', 'Connectez vous pour accèder à votre liste de taches');
+
             return $this->redirectToRoute('app_login');
         }
-        return $this->render('task/list.html.twig', ['tasks' => $taskRepository->findBy([ "user" => [$user, null], "isDone" => $isDone ])]);
+
+        return $this->render('task/list.html.twig', ['tasks' => $taskRepository->findBy(['user' => [$user, null], 'isDone' => $isDone])]);
     }
 
     #[Route(path: '/tasks/{id}/edit', name: 'task_edit')]
-    #[IsGranted('ROLE_USER', message: "Vous devez être connecter avec un compte utilisateur")]
+    #[IsGranted('ROLE_USER', message: 'Vous devez être connecter avec un compte utilisateur')]
     public function editAction(Task $task, TaskRepository $taskRepository, Request $request): RedirectResponse|Response
     {
-        if($task->getUser() !== $this->getUser()){
+        if ($task->getUser() !== $this->getUser()) {
             $this->addFlash('error', 'Vous ne possédez pas de droit suffisant pour editer cette tâche');
+
             return $this->redirectToRoute('task_list');
         }
         $form = $this->createForm(TaskType::class, $task);
@@ -82,20 +86,24 @@ class TaskController extends AbstractController
     }
 
     #[Route(path: '/tasks/{id}/toggle', name: 'task_toggle')]
-    #[IsGranted('ROLE_USER', message: "Vous devez être connecter avec un compte utilisateur")]
+    #[IsGranted('ROLE_USER', message: 'Vous devez être connecter avec un compte utilisateur')]
     public function toggleTaskAction(Task $task, TaskRepository $taskRepository): RedirectResponse
     {
         /** @var User $user */
         $user = $this->getUser();
         $userRoles = implode($user->getRoles());
-        $userRoles = implode($this->getUser()->getRoles());
-        if($userRoles == "ROLE_USER" and $task->getUser() !== $this->getUser()){
+
+        if ('ROLE_USER' == $userRoles and $task->getUser() !== $this->getUser()) {
             $this->addFlash('error', 'Vous ne possédez pas de droit suffisant pour changer cette tâche');
+
             return $this->redirectToRoute('task_list');
         }
-        if($userRoles == "ROLE_ADMIN" and $task->getUser() !== ($this->getUser()||null)){
-            $this->addFlash('error', "Vous ne pouvez pas changer la tâche d'un autre utilisateur");
-            return $this->redirectToRoute('task_list');
+        if ('ROLE_ADMIN' == $userRoles and $task->getUser() !== $this->getUser()) {
+            if (null !== $task->getUser()) {
+                $this->addFlash('error', "Vous ne pouvez pas changer la tâche d'un autre utilisateur");
+
+                return $this->redirectToRoute('task_list');
+            }
         }
         $task->toggle(!$task->isDone());
         $taskRepository->add($task, true);
@@ -106,18 +114,22 @@ class TaskController extends AbstractController
     }
 
     #[Route(path: '/tasks/{id}/delete', name: 'task_delete')]
-    #[IsGranted('ROLE_USER', message: "Vous devez être connecter avec un compte utilisateur")]
+    #[IsGranted('ROLE_USER', message: 'Vous devez être connecter avec un compte utilisateur')]
     public function deleteTaskAction(Task $task, EntityManagerInterface $em): RedirectResponse
     {
         /** @var User $user */
         $user = $this->getUser();
         $userRoles = implode($user->getRoles());
-        if($userRoles == "ROLE_USER" and $task->getUser() !== ($user||null)){
-            $this->addFlash('error', 'Vous ne pouvez supprimer que vos propres tâches ');
-            return $this->redirectToRoute('task_list');
+        if ('ROLE_USER' == $userRoles and $task->getUser() !== $user) {
+            if (null !== $task->getUser()) {
+                $this->addFlash('error', 'Vous ne pouvez supprimer que vos propres tâches ');
+
+                return $this->redirectToRoute('task_list');
+            }
         }
-        if($userRoles == "ROLE_ADMIN" and $task->getUser() !== $user){
+        if ('ROLE_ADMIN' == $userRoles and $task->getUser() !== $user) {
             $this->addFlash('error', "Vous ne pouvez pas supprimer la tâche d'un autre utilisateur");
+
             return $this->redirectToRoute('task_list');
         }
         $em->remove($task);

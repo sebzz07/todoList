@@ -1,14 +1,16 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Table('user')]
 #[ORM\Entity]
@@ -45,41 +47,44 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->tasks = new ArrayCollection();
     }
 
-    public function getId() : ?int
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUsername() : ?string
+    public function getUsername(): ?string
     {
         return $this->username;
     }
 
-    public function setUsername($username) : self
+    public function setUsername(string $username): self
     {
         $this->username = $username;
+
         return $this;
     }
 
-    public function getPassword() : ?string
+    public function getPassword(): ?string
     {
         return $this->password;
     }
 
-    public function setPassword($password) : self
+    public function setPassword(string $password): self
     {
         $this->password = $password;
+
         return $this;
     }
 
-    public function getEmail() : ?string
+    public function getEmail(): ?string
     {
         return $this->email;
     }
 
-    public function setEmail($email) : self
+    public function setEmail(string $email): self
     {
         $this->email = $email;
+
         return $this;
     }
 
@@ -103,16 +108,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRoles(array $roles): self
     {
         $this->roles = $roles;
+
         return $this;
     }
 
-    public function addRole(string $role) : self
+    public function addRole(string $role): self
     {
-        $this->roles = array($role);
+        $this->roles = [$role];
+
         return $this;
     }
 
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
     }
 

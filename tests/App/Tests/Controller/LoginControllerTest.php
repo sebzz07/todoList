@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -13,8 +15,8 @@ class LoginControllerTest extends WebTestCase
         $client->request('GET', '/login');
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
         $this->assertSelectorNotExists('alert alert-danger');
-
     }
+
     public function testLoginWithBadCredentials(): void
     {
         $client = static::createClient();
@@ -22,13 +24,13 @@ class LoginControllerTest extends WebTestCase
         $crawler = $client->request('GET', '/login');
         $form = $crawler->selectButton('Se connecter')->form([
             '_username' => 'fakeUser',
-            '_password' => 'fakePwd'
+            '_password' => 'fakePwd',
         ]);
         $client->submit($form);
-        //$this->assertResponseRedirects('/login');
-        //$client->followRedirect();
+        // $this->assertResponseRedirects('/login');
+        // $client->followRedirect();
         $this->assertSelectorTextContains('button', 'Se connecter');
-        $this->assertSelectorExists('div','Invalid credentials.');
+        $this->assertSelectorExists('div', 'Invalid credentials.');
     }
 
     public function testLoginWithRightCredentials()
@@ -37,7 +39,7 @@ class LoginControllerTest extends WebTestCase
         $crawler = $client->request('GET', '/login');
         $form = $crawler->selectButton('Se connecter')->form([
             '_username' => 'admin1',
-            '_password' => 'admin'
+            '_password' => 'admin',
         ]);
         $client->submit($form);
         $client->followRedirect();

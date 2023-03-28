@@ -1,17 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Controller;
 
 use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
-use Exception;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
 class TaskControllerTest extends WebTestCase
 {
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function testUsersListAuthorizedForAdmin(): void
     {
@@ -27,7 +28,7 @@ class TaskControllerTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $form = $crawler->selectButton('Ajouter')->form([
             'task[title]' => 'test1',
-            'task[content]' => 'test1'
+            'task[content]' => 'test1',
         ]);
         $client->submit($form);
         $client->followRedirect();
@@ -36,7 +37,7 @@ class TaskControllerTest extends WebTestCase
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function testUsersListUnauthorizedForUser(): void
     {
@@ -52,7 +53,7 @@ class TaskControllerTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $form = $crawler->selectButton('Ajouter')->form([
             'task[title]' => 'test1',
-            'task[content]' => 'test1'
+            'task[content]' => 'test1',
         ]);
         $client->submit($form);
         $client->followRedirect();
@@ -61,7 +62,7 @@ class TaskControllerTest extends WebTestCase
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function testUsersNotAllowedToAccessTasksOfAnotherUser(): void
     {
@@ -81,7 +82,7 @@ class TaskControllerTest extends WebTestCase
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function testUsersEditTaskWithSuccess(): void
     {
@@ -99,11 +100,11 @@ class TaskControllerTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $form = $crawler->selectButton('Modifier')->form([
             'task[title]' => 'ModifiedTitle',
-            'task[content]' => 'ModifiedContent'
+            'task[content]' => 'ModifiedContent',
         ]);
         $client->submit($form);
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
-        $this->assertSelectorExists('div','La tâche a bien été modifiée.');
+        $this->assertSelectorExists('div', 'La tâche a bien été modifiée.');
 
         $ModifiedTask = $taskRepository->findOneBy(['id' => '2']);
         $this->assertStringContainsString('ModifiedTitle', $ModifiedTask->getTitle());
@@ -111,7 +112,7 @@ class TaskControllerTest extends WebTestCase
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function testUsersToggleTaskWithSuccess(): void
     {
@@ -127,11 +128,11 @@ class TaskControllerTest extends WebTestCase
         $crawler = $client->request('GET', '/tasks/6/toggle');
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
-        $this->assertSelectorExists('div','La tâche a bien été modifiée.');
+        $this->assertSelectorExists('div', 'La tâche a bien été modifiée.');
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function testUsersNotAllowedToToggleTasksOfAnotherUser(): void
     {
@@ -151,7 +152,7 @@ class TaskControllerTest extends WebTestCase
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function testUserDeleteHisTask(): void
     {
@@ -167,9 +168,9 @@ class TaskControllerTest extends WebTestCase
         $client->loginUser($testUser);
         $client->request('GET', '/tasks/'.$task->getId().'/delete');
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorExists('div.success','La tâche a bien été supprimée.');
+        $this->assertSelectorExists('div.success', 'La tâche a bien été supprimée.');
 
-        //$ModifiedTask = $taskRepository->findOneBy(['id' => $task->getId()]);
-        //$this->assertTrue($ModifiedTask);
+        // $ModifiedTask = $taskRepository->findOneBy(['id' => $task->getId()]);
+        // $this->assertTrue($ModifiedTask);
     }
 }

@@ -1,17 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Controller;
 
 use App\Repository\UserRepository;
-use Exception;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserControllerTest extends WebTestCase
 {
-
-    public function testCreateUserPageIsRestricted() : void
+    public function testCreateUserPageIsRestricted(): void
     {
         $client = static::createClient();
         $client->followRedirects();
@@ -20,10 +20,9 @@ class UserControllerTest extends WebTestCase
     }
 
     /**
-     *
-     * @throws Exception
+     * @throws \Exception
      */
-    public function testCreateUserPageUnauthorizedForUser() : void
+    public function testCreateUserPageUnauthorizedForUser(): void
     {
         $client = static::createClient();
         $client->followRedirects();
@@ -39,9 +38,9 @@ class UserControllerTest extends WebTestCase
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
-    public function testCreateUserPageAuthorizedForAdmin() : void
+    public function testCreateUserPageAuthorizedForAdmin(): void
     {
         $client = static::createClient();
         $userRepository = static::getContainer()->get(UserRepository::class);
@@ -57,9 +56,9 @@ class UserControllerTest extends WebTestCase
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
-    public function testCreateAUserByAdmin() : void
+    public function testCreateAUserByAdmin(): void
     {
         $client = static::createClient();
         $client->followRedirects();
@@ -82,10 +81,9 @@ class UserControllerTest extends WebTestCase
         $client->submit($form);
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('html div.alert-success', "L'utilisateur a bien été ajouté.");
-
     }
 
-    public function testUsersListPageIsRestrictedForNoLoggedUser() : void
+    public function testUsersListPageIsRestrictedForNoLoggedUser(): void
     {
         $client = static::createClient();
         $client->followRedirects();
@@ -94,13 +92,12 @@ class UserControllerTest extends WebTestCase
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
-    public function testUsersListAuthorizedForAdmin() : void
+    public function testUsersListAuthorizedForAdmin(): void
     {
         $client = static::createClient();
         $userRepository = static::getContainer()->get(UserRepository::class);
-
 
         // retrieve the test user
         $testAdminUser = $userRepository->findOneBy(['username' => 'admin1']);
@@ -112,11 +109,10 @@ class UserControllerTest extends WebTestCase
         $this->assertSelectorTextContains('h1', 'Liste des utilisateurs');
     }
 
-
     /**
-     * @throws Exception
+     * @throws \Exception
      */
-    public function testEditAUserByAdmin() : void
+    public function testEditAUserByAdmin(): void
     {
         $client = static::createClient();
         $client->followRedirects();
@@ -141,7 +137,7 @@ class UserControllerTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('html div.alert-success', "L'utilisateur a bien été modifié.");
 
-        $passwordHasher = static::getContainer()->get(UserPasswordHasherInterface ::class);
+        $passwordHasher = static::getContainer()->get(UserPasswordHasherInterface::class);
         $ModifiedUser = $userRepository->findOneBy(['id' => $idOfEditedUser]);
         $checkPassword = $passwordHasher->isPasswordValid($ModifiedUser, 'useredited');
 

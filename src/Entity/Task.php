@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Entity;
 
@@ -8,7 +10,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
 #[ORM\Table]
-
 class Task
 {
     #[ORM\Id]
@@ -17,7 +18,7 @@ class Task
     private ?int $id = null;
 
     #[ORM\Column(type: 'datetime')]
-    private \Datetime $createdAt;
+    private \DateTime $createdAt;
 
     #[ORM\Column(type: 'string')]
     #[Assert\NotBlank(message: 'Vous devez saisir un titre.')]
@@ -35,22 +36,23 @@ class Task
 
     public function __construct()
     {
-        $this->createdAt = new \Datetime();
+        $this->createdAt = new \DateTime();
     }
 
-    public function getId() : ?int
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getCreatedAt(): \Datetime
+    public function getCreatedAt(): \DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt($createdAt): self
+    public function setCreatedAt(mixed $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -59,9 +61,10 @@ class Task
         return $this->title;
     }
 
-    public function setTitle($title): self
+    public function setTitle(string $title): self
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -70,9 +73,10 @@ class Task
         return $this->content;
     }
 
-    public function setContent($content): self
+    public function setContent(string $content): self
     {
         $this->content = $content;
+
         return $this;
     }
 
@@ -84,6 +88,7 @@ class Task
     public function toggle(bool $flag): self
     {
         $this->isDone = $flag;
+
         return $this;
     }
 
@@ -95,6 +100,7 @@ class Task
     public function setUser(?User $user): self
     {
         $this->user = $user;
+
         return $this;
     }
 }
