@@ -2,6 +2,7 @@
 
 namespace App\Tests\Controller;
 
+use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -85,7 +86,9 @@ class TaskControllerTest extends WebTestCase
     public function testUsersEditTaskWithSuccess(): void
     {
         $client = static::createClient();
+        $client->followRedirects();
         $userRepository = static::getContainer()->get(UserRepository::class);
+        $taskRepository = static::getContainer()->get(TaskRepository::class);
 
         // retrieve the test user
         $testUser = $userRepository->findOneBy(['username' => 'user1']);
@@ -98,8 +101,13 @@ class TaskControllerTest extends WebTestCase
             'task[title]' => 'ModifiedTitle',
             'task[content]' => 'ModifiedContent'
         ]);
+        $client->submit($form);
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
         $this->assertSelectorExists('div','La tâche a bien été modifiée.');
+
+        $ModifiedTask = $taskRepository->findOneBy(['id' => '2']);
+        $this->assertStringContainsString('ModifiedTitle', $ModifiedTask->getTitle());
+        $this->assertStringContainsString('ModifiedContent', $ModifiedTask->getContent());
     }
 
     /**
@@ -140,5 +148,28 @@ class TaskControllerTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
         $this->assertSelectorTextContains('strong', 'Oops !');
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUserDeleteHisTask(): void
+    {
+        $client = static::createClient();
+        $client->followRedirects();
+        $userRepository = static::getContainer()->get(UserRepository::class);
+
+        // retrieve the test user
+        $testUser = $userRepository->findOneBy(['username' => 'user1']);
+        $task = $testUser->getTasks()->first();
+
+        // simulate $testUser being logged in
+        $client->loginUser($testUser);
+        $client->request('GET', '/tasks/'.$task->getId().'/delete');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorExists('div.success','La tâche a bien été supprimée.');
+
+        //$ModifiedTask = $taskRepository->findOneBy(['id' => $task->getId()]);
+        //$this->assertTrue($ModifiedTask);
     }
 }

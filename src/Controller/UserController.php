@@ -62,10 +62,11 @@ class UserController extends AbstractController
                 $user,
                 $form->get('password')->getData()
             ));
+            $user->setRoles(array($form->get('role')->getData()));
 
             $userRepository->add($user, true);
 
-            $this->addFlash('success', "L'utilisateur a bien été modifié");
+            $this->addFlash('success', "L'utilisateur a bien été modifié.");
 
             return $this->redirectToRoute('user_list');
         }
