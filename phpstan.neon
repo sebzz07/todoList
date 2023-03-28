@@ -1,0 +1,15 @@
+includes:
+	- vendor/phpstan/phpstan-symfony/extension.neon
+	- vendor/phpstan/phpstan-doctrine/extension.neon
+	- vendor/phpstan/phpstan-phpunit/extension.neon
+
+parameters:
+    level: 8
+    checkGenericClassInNonGenericObjectType: false
+    treatPhpDocTypesAsCertain: false
+
+    symfony:
+        container_xml_path: %rootDir%/../../../var/cache/dev/App_KernelDevDebugContainer.xml
+
+    paths:
+        - src
