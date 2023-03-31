@@ -9,17 +9,24 @@ use App\Entity\User;
 use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
 use Exception;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
 class TaskControllerTest extends WebTestCase
 {
+    private KernelBrowser $client;
+
+    public function setUp(): void
+    {
+        $this->client = static::createClient();
+    }
+    
     /**
      * @throws Exception
      */
     public function testUsersListAuthorizedForAdmin(): void
     {
-        $client = static::createClient();
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test user
@@ -27,15 +34,15 @@ class TaskControllerTest extends WebTestCase
         $testAdminUser = $userRepository->findOneBy(['username' => 'admin1']);
 
         // simulate $testUser being logged in
-        $client->loginUser($testAdminUser);
-        $crawler = $client->request('GET', '/tasks/create');
+        $this->client->loginUser($testAdminUser);
+        $crawler = $this->client->request('GET', '/tasks/create');
         $this->assertResponseIsSuccessful();
         $form = $crawler->selectButton('Ajouter')->form([
             'task[title]' => 'test1',
             'task[content]' => 'test1',
         ]);
-        $client->submit($form);
-        $client->followRedirect();
+        $this->client->submit($form);
+        $this->client->followRedirect();
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
         $this->assertSelectorTextContains('strong', 'Superbe !');
     }
@@ -45,7 +52,6 @@ class TaskControllerTest extends WebTestCase
      */
     public function testUsersListUnauthorizedForUser(): void
     {
-        $client = static::createClient();
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test user
@@ -53,15 +59,15 @@ class TaskControllerTest extends WebTestCase
         $testUser = $userRepository->findOneBy(['username' => 'user1']);
 
         // simulate $testUser being logged in
-        $client->loginUser($testUser);
-        $crawler = $client->request('GET', '/tasks/create');
+        $this->client->loginUser($testUser);
+        $crawler = $this->client->request('GET', '/tasks/create');
         $this->assertResponseIsSuccessful();
         $form = $crawler->selectButton('Ajouter')->form([
             'task[title]' => 'test1',
             'task[content]' => 'test1',
         ]);
-        $client->submit($form);
-        $client->followRedirect();
+        $this->client->submit($form);
+        $this->client->followRedirect();
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
         $this->assertSelectorTextContains('strong', 'Superbe !');
     }
@@ -71,7 +77,6 @@ class TaskControllerTest extends WebTestCase
      */
     public function testUsersNotAllowedToAccessTasksOfAnotherUser(): void
     {
-        $client = static::createClient();
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test user
@@ -79,9 +84,9 @@ class TaskControllerTest extends WebTestCase
         $testUser = $userRepository->findOneBy(['username' => 'user1']);
 
         // simulate $testUser being logged in
-        $client->loginUser($testUser);
-        $crawler = $client->request('GET', '/tasks/21/edit');
-        $client->followRedirect();
+        $this->client->loginUser($testUser);
+        $crawler = $this->client->request('GET', '/tasks/21/edit');
+        $this->client->followRedirect();
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
         $this->assertSelectorTextContains('strong', 'Oops !');
@@ -92,8 +97,7 @@ class TaskControllerTest extends WebTestCase
      */
     public function testUsersEditTaskWithSuccess(): void
     {
-        $client = static::createClient();
-        $client->followRedirects();
+        $this->client->followRedirects();
         $userRepository = static::getContainer()->get(UserRepository::class);
         $taskRepository = static::getContainer()->get(TaskRepository::class);
 
@@ -102,14 +106,14 @@ class TaskControllerTest extends WebTestCase
         $testUser = $userRepository->findOneBy(['username' => 'user1']);
 
         // simulate $testUser being logged in
-        $client->loginUser($testUser);
-        $crawler = $client->request('GET', '/tasks/2/edit');
+        $this->client->loginUser($testUser);
+        $crawler = $this->client->request('GET', '/tasks/2/edit');
         $this->assertResponseIsSuccessful();
         $form = $crawler->selectButton('Modifier')->form([
             'task[title]' => 'ModifiedTitle',
             'task[content]' => 'ModifiedContent',
         ]);
-        $client->submit($form);
+        $this->client->submit($form);
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
         $this->assertSelectorExists('div', 'La tâche a bien été modifiée.');
 
@@ -123,7 +127,6 @@ class TaskControllerTest extends WebTestCase
      */
     public function testUsersToggleTaskWithSuccess(): void
     {
-        $client = static::createClient();
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test user
@@ -131,9 +134,9 @@ class TaskControllerTest extends WebTestCase
         $testUser = $userRepository->findOneBy(['username' => 'user1']);
 
         // simulate $testUser being logged in
-        $client->loginUser($testUser);
-        $client->followRedirects();
-        $crawler = $client->request('GET', '/tasks/6/toggle');
+        $this->client->loginUser($testUser);
+        $this->client->followRedirects();
+        $crawler = $this->client->request('GET', '/tasks/6/toggle');
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
         $this->assertSelectorExists('div', 'La tâche a bien été modifiée.');
@@ -144,7 +147,6 @@ class TaskControllerTest extends WebTestCase
      */
     public function testUsersNotAllowedToToggleTasksOfAnotherUser(): void
     {
-        $client = static::createClient();
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test userAdmin
@@ -159,9 +161,9 @@ class TaskControllerTest extends WebTestCase
         $task = $testUserB->getTasks()->first();
 
         // simulate $testUser being logged in
-        $client->loginUser($testUserA);
-        $client->request('GET', '/tasks/'.$task->getId().'/toggle');
-        $client->followRedirect();
+        $this->client->loginUser($testUserA);
+        $this->client->request('GET', '/tasks/'.$task->getId().'/toggle');
+        $this->client->followRedirect();
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
         $this->assertSelectorTextContains('html div.alert-danger', "Oops ! Vous ne possédez pas de droit suffisant pour changer cette tâche");
@@ -172,7 +174,6 @@ class TaskControllerTest extends WebTestCase
      */
     public function testUserAdminNotAllowedToToggleTasksOfAnotherUser(): void
     {
-        $client = static::createClient();
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test userAdmin
@@ -188,9 +189,9 @@ class TaskControllerTest extends WebTestCase
         $task = $testUser->getTasks()->first();
 
         // simulate $testUser being logged in
-        $client->loginUser($testUserAdmin);
-        $client->request('GET', '/tasks/'.$task->getId().'/toggle');
-        $client->followRedirect();
+        $this->client->loginUser($testUserAdmin);
+        $this->client->request('GET', '/tasks/'.$task->getId().'/toggle');
+        $this->client->followRedirect();
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
         $this->assertSelectorTextContains('html div.alert-danger', "Oops ! Vous ne pouvez pas changer la tâche d'un autre utilisateur");
@@ -203,8 +204,7 @@ class TaskControllerTest extends WebTestCase
      */
     public function testUserDeleteHisTask(): void
     {
-        $client = static::createClient();
-        $client->followRedirects();
+        $this->client->followRedirects();
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test user
@@ -215,8 +215,8 @@ class TaskControllerTest extends WebTestCase
         $task = $testUser->getTasks()->first();
 
         // simulate $testUser being logged in
-        $client->loginUser($testUser);
-        $client->request('GET', '/tasks/'.$task->getId().'/delete');
+        $this->client->loginUser($testUser);
+        $this->client->request('GET', '/tasks/'.$task->getId().'/delete');
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('html div.alert-success', "La tâche a bien été supprimée.");
 
@@ -227,8 +227,7 @@ class TaskControllerTest extends WebTestCase
      */
     public function testUserAdminDeleteHisTask(): void
     {
-        $client = static::createClient();
-        $client->followRedirects();
+        $this->client->followRedirects();
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test userAdmin
@@ -239,8 +238,8 @@ class TaskControllerTest extends WebTestCase
         $task = $testUserAdmin->getTasks()->first();
 
         // simulate $testUser being logged in
-        $client->loginUser($testUserAdmin);
-        $client->request('GET', '/tasks/'.$task->getId().'/delete');
+        $this->client->loginUser($testUserAdmin);
+        $this->client->request('GET', '/tasks/'.$task->getId().'/delete');
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('html div.alert-success', "La tâche a bien été supprimée.");
 
@@ -251,8 +250,7 @@ class TaskControllerTest extends WebTestCase
      */
     public function testUserDeleteTaskOfAnOtherUser(): void
     {
-        $client = static::createClient();
-        $client->followRedirects();
+        $this->client->followRedirects();
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test userAdmin
@@ -267,8 +265,8 @@ class TaskControllerTest extends WebTestCase
         $task = $testUserB->getTasks()->first();
 
         // simulate $testUser being logged in
-        $client->loginUser($testUserA);
-        $client->request('GET', '/tasks/'.$task->getId().'/delete');
+        $this->client->loginUser($testUserA);
+        $this->client->request('GET', '/tasks/'.$task->getId().'/delete');
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('html div.alert-danger', "Oops ! Vous ne pouvez supprimer que vos propres tâches");
     }
@@ -278,8 +276,7 @@ class TaskControllerTest extends WebTestCase
      */
     public function testAdminDeleteTaskOfAnOtherUser(): void
     {
-        $client = static::createClient();
-        $client->followRedirects();
+        $this->client->followRedirects();
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test userAdmin
@@ -294,8 +291,8 @@ class TaskControllerTest extends WebTestCase
         $task = $testUser->getTasks()->first();
 
         // simulate $testUser being logged in
-        $client->loginUser($testUserAdmin);
-        $client->request('GET', '/tasks/'.$task->getId().'/delete');
+        $this->client->loginUser($testUserAdmin);
+        $this->client->request('GET', '/tasks/'.$task->getId().'/delete');
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('html div.alert-danger', "Oops ! Vous ne pouvez pas supprimer la tâche d'un autre utilisateur");
     }

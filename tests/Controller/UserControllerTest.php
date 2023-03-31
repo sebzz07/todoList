@@ -7,17 +7,25 @@ namespace App\Tests\Controller;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Exception;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserControllerTest extends WebTestCase
 {
+    private KernelBrowser $client;
+
+    public function setUp(): void
+    {
+        $this->client = static::createClient();
+    }
+
     public function testCreateUserPageIsRestricted(): void
     {
-        $client = static::createClient();
-        $client->followRedirects();
-        $client->request('GET', '/users/create');
+        
+        $this->client->followRedirects();
+        $this->client->request('GET', '/users/create');
         $this->assertSelectorTextContains('button', 'Se connecter');
     }
 
@@ -26,8 +34,7 @@ class UserControllerTest extends WebTestCase
      */
     public function testCreateUserPageUnauthorizedForUser(): void
     {
-        $client = static::createClient();
-        $client->followRedirects();
+        $this->client->followRedirects();
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test user
@@ -35,8 +42,8 @@ class UserControllerTest extends WebTestCase
         $testUser = $userRepository->findOneBy(['username' => 'user1']);
 
         // simulate $testUser being logged in
-        $client->loginUser($testUser);
-        $client->request('GET', '/users/create');
+        $this->client->loginUser($testUser);
+        $this->client->request('GET', '/users/create');
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
@@ -45,7 +52,7 @@ class UserControllerTest extends WebTestCase
      */
     public function testCreateUserPageAuthorizedForAdmin(): void
     {
-        $client = static::createClient();
+        
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test user
@@ -53,8 +60,8 @@ class UserControllerTest extends WebTestCase
         $testAdminUser = $userRepository->findOneBy(['username' => 'admin1']);
 
         // simulate $testUser being logged in
-        $client->loginUser($testAdminUser);
-        $client->request('GET', '/users/create');
+        $this->client->loginUser($testAdminUser);
+        $this->client->request('GET', '/users/create');
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', 'Créer un utilisateur');
     }
@@ -64,8 +71,8 @@ class UserControllerTest extends WebTestCase
      */
     public function testCreateAUserByAdmin(): void
     {
-        $client = static::createClient();
-        $client->followRedirects();
+        
+        $this->client->followRedirects();
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test user
@@ -73,8 +80,8 @@ class UserControllerTest extends WebTestCase
         $testAdminUser = $userRepository->findOneBy(['username' => 'admin1']);
 
         // simulate $testUser being logged in
-        $client->loginUser($testAdminUser);
-        $crawler = $client->request('GET', '/users/create');
+        $this->client->loginUser($testAdminUser);
+        $crawler = $this->client->request('GET', '/users/create');
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', 'Créer un utilisateur');
         $form = $crawler->selectButton('Ajouter')->form();
@@ -83,16 +90,16 @@ class UserControllerTest extends WebTestCase
         $form['user[password][second]'] = 'NewUser';
         $form['user[email]'] = 'NewUser@email.fr';
         $form['user[role]']->select('ROLE_USER');
-        $client->submit($form);
+        $this->client->submit($form);
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('html div.alert-success', "L'utilisateur a bien été ajouté.");
     }
 
     public function testUsersListPageIsRestrictedForNoLoggedUser(): void
     {
-        $client = static::createClient();
-        $client->followRedirects();
-        $client->request('GET', '/users');
+        
+        $this->client->followRedirects();
+        $this->client->request('GET', '/users');
         $this->assertSelectorTextContains('button', 'Se connecter');
     }
 
@@ -101,7 +108,7 @@ class UserControllerTest extends WebTestCase
      */
     public function testUsersListAuthorizedForAdmin(): void
     {
-        $client = static::createClient();
+        
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test user
@@ -109,8 +116,8 @@ class UserControllerTest extends WebTestCase
         $testAdminUser = $userRepository->findOneBy(['username' => 'admin1']);
 
         // simulate $testUser being logged in
-        $client->loginUser($testAdminUser);
-        $client->request('GET', '/users');
+        $this->client->loginUser($testAdminUser);
+        $this->client->request('GET', '/users');
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', 'Liste des utilisateurs');
     }
@@ -120,8 +127,8 @@ class UserControllerTest extends WebTestCase
      */
     public function testEditAUserByAdmin(): void
     {
-        $client = static::createClient();
-        $client->followRedirects();
+        
+        $this->client->followRedirects();
         $userRepository = static::getContainer()->get(UserRepository::class);
 
         // retrieve the test user
@@ -129,8 +136,8 @@ class UserControllerTest extends WebTestCase
         $idOfEditedUser = $userRepository->findOneBy(['username' => 'user1'])->getId();
 
         // simulate $testUser being logged in
-        $client->loginUser($testAdminUser);
-        $crawler = $client->request('GET', '/users/'.$idOfEditedUser.'/edit');
+        $this->client->loginUser($testAdminUser);
+        $crawler = $this->client->request('GET', '/users/'.$idOfEditedUser.'/edit');
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', 'Modifier user1');
         $form = $crawler->selectButton('Modifier')->form();
@@ -139,7 +146,7 @@ class UserControllerTest extends WebTestCase
         $form['user[password][second]'] = 'useredited';
         $form['user[email]'] = 'user1editied@test.com';
         $form['user[role]']->select('ROLE_ADMIN');
-        $client->submit($form);
+        $this->client->submit($form);
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('html div.alert-success', "L'utilisateur a bien été modifié.");
 
